@@ -9,6 +9,7 @@ import smtplib
 import binascii
 from email.message import EmailMessage
 from bitcoinlib.keys import HDKey
+from bitcoinlib.services.services import Service
 
 # import our configs
 import addresses
@@ -51,10 +52,16 @@ def main(num_seconds):
         i = i + 1
         for item in addresses.addresses:        # Second Example
             if address == item:
+                try:
+                    balance = str((Service().getbalance(address))/10e7) + " BTC"
+                except Exception as e:
+                    balance = "UNKNOWN"
+
                 lucky_text  = "--------------------------------------\n"
                 lucky_text += "FOUND LUCKY PAIR:\n" 
                 lucky_text += "PRIVATE KEY = " + private_key + "\n"
                 lucky_text += "ADDRESS = " + address + "\n"
+                lucky_text += "BALANCE = " + balance + "\n"
                 lucky_text += "--------------------------------------\n"
 
                 try:

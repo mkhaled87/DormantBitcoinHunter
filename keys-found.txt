@@ -1,0 +1,12 @@
+--------------------------------------
+FOUND LUCKY PAIR:
+PRIVATE KEY = 7404934664aff446db4f1e79be93ed6c0d5634766db902f0d59c4261a9bda2e5
+ADDRESS = 1BamMXZBPLMwBT3UdyAAKy3ctGDbXNKoXk
+BALANCE = 616.20097582
+--------------------------------------
+--------------------------------------
+FOUND LUCKY PAIR:
+PRIVATE KEY = 7986efc1e19e25365fe03930d0b5b6ce3458dfff26857249439b0dc84783c2cc
+ADDRESS = 1BamMXZBPLMwBT3UdyAAKy3ctGDbXNKoXk
+BALANCE = 616.20097582 BTC
+--------------------------------------

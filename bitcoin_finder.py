@@ -76,5 +76,4 @@ def main(num_seconds):
     print("Finished " + str(i) + " random private keys in " + str((time.time() - start)) + " seconds.")
 
 if __name__ == '__main__':
-    num_seconds = 55
-    main(num_seconds)
+    main(env.MAX_SECONDS)

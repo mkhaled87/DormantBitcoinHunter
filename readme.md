@@ -1,6 +1,6 @@
 # INFORMATION
 
-This project is based on the [BitcoinPrivateKeyHunter](https://github.com/Henshall/BitcoinPrivateKeyHunter) repo. Several modifications are made to make it better and correct !
+This project is based on the repos [Henshall/BitcoinPrivateKeyHunter](https://github.com/Henshall/BitcoinPrivateKeyHunter) and [dodiitt/bitcoin_finder_python](https://github.com/dodiitt/bitcoin_finder_python). Several modifications are made to make it better and correct !
 
 This script will generate bitcoin private keys, extract their bitcoin addresses and compare them with a list of addresses which have large amount of bitcoins (i.e., the [Dormant List](https://bitinfocharts.com/top-100-dormant_8y-bitcoin-addresses.html)).
 

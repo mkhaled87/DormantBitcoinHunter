@@ -53,7 +53,7 @@ def main(num_seconds):
         for item in addresses.addresses:        # Second Example
             if address == item:
                 try:
-                    balance = str((Service().getbalance(address))/10e7) + " BTC"
+                    balance = str((Service().getbalance(address))/1e8) + " BTC"
                 except Exception as e:
                     balance = "UNKNOWN"
 

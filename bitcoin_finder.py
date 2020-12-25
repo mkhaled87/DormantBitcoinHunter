@@ -44,9 +44,9 @@ def main(num_trials):
         # override for testing
         #if i == 0:
         #s   address = '1BamMXZBPLMwBT3UdyAAKy3ctGDbXNKoXk'
-        if i == 0:
-            print("Started with private key: " + private_key)
-            print("Its address: " + address)
+        #if i == 0:
+        #    print("Started with private key: " + private_key)
+        #    print("Its address: " + address)
 
         i = i + 1
         for item in addresses.addresses:        # Second Example

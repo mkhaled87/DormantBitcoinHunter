@@ -1,0 +1,10 @@
+--------------------------------------
+FOUND LUCKY PAIR:
+PRIVATE KEY = 13250521eb8c6767e7ba6c70f179f976f376b594b9be9dafae3d02d200309fa4
+ADDRESS = 1BamMXZBPLMwBT3UdyAAKy3ctGDbXNKoXk
+--------------------------------------
+--------------------------------------
+FOUND LUCKY PAIR:
+PRIVATE KEY = ea92ee2d52229493238d07f7b7d2278e7b1cd5b52748d4481d7acfdf2ff24662
+ADDRESS = 1BamMXZBPLMwBT3UdyAAKy3ctGDbXNKoXk
+--------------------------------------

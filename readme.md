@@ -1,26 +1,19 @@
-#INFORMATION
-This script will guess bitcoin public and private keys and
-references them with a list of addresses which have large amount of bitcoin in them.
+# INFORMATION
 
-It is hunting for treasure :)
+This script will guess bitcoin public and private keys and compare them with a list of addresses which have large amount of bitcoin in them ([Dormant List](https://bitinfocharts.com/top-100-dormant_8y-bitcoin-addresses.html)).
 
-If the program finds a matching paid it will send you an email.
+It is hunting for treasure :).
 
+If the program finds a matching paid it will send an email.
 
-##SETUP
+## SETUP
 
-1) rename the env.example file to env.py (it contains a list of variables which will be used to send you an email)
+1. rename the env.example file to env.py (it contains a list of variables which will be used to send you an email)
 
-2) change the variables to suit your needs. This application uses AWS SES CREDENTIALS, So you will need to already have an amazon ses account to use it. You can also simply change the way the emailer works,
-which may be easier then signing up for the amazon emailer service
+2. change the variables to suit your needs. 
 
-3) run the program with python3 bitcoin_finder.py OR set up a cron job to hit it every minute. It currently examines 9 million keys looking for matches which should take much less then a minute.
+3. run the program with `python3 bitcoin_finder.py` or set up a job to hit it every few seconds. It currently examines 10000 random private keys and looks for matches which takes much less then a minute in Intel Core i9 9th gen processor.
 
-Make sure you set the KEYS_FOUND_TEXT_FILE_NAME variable to the full file name of the keys file.
+4. You may need to run the following command: `chmod -R 777 keys-found.txt`. This will make sure your keys-found.txt file is writable. You may even want to run a cron job to constantly change this if you are pulling a later version from github.
 
-4) Run the following command: chmod -R 777 keys-found.txt    
-This will make sure your keys-found.txt file is writable.
-You may even want to run a cron job to constantly change this if you are pulling a later version from github
-
-
-Enjoy!
+Have Fun !

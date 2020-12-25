@@ -33,17 +33,17 @@ def priv_key():
     return binascii.hexlify(os.urandom(32)).decode('utf-8')
 
 # do your job !
-def main(num_trials):
+def main(num_seconds):
     i = 0
     start = time.time()
-    while i < num_trials:
+    while ((time.time() - start)) < num_seconds:
         private_key = priv_key()
         key = HDKey(private_key)
         address = key.address()
     
         # override for testing
         #if i == 0:
-        #s   address = '1BamMXZBPLMwBT3UdyAAKy3ctGDbXNKoXk'
+        #    address = '1BamMXZBPLMwBT3UdyAAKy3ctGDbXNKoXk'
         #if i == 0:
         #    print("Started with private key: " + private_key)
         #    print("Its address: " + address)
@@ -66,10 +66,8 @@ def main(num_trials):
                 fl.write(lucky_text)
                 fl.close()
 
-    end = time.time()
-    diff = (end - start)
-    print("Finished trying " + str(i) + " random private keys in " + str(diff) + " seconds.")
+    print("Finished " + str(i) + " random private keys in " + str((time.time() - start)) + " seconds.")
 
 if __name__ == '__main__':
-    num_trials = 10000
-    main(num_trials)
+    num_seconds = 55
+    main(num_seconds)

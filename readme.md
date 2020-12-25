@@ -11,8 +11,14 @@ If the program finds a matching paid it will send an email.
 
 1. Make sure you have `Python 3.x` installed. Install the following packages: `ecdsa`, `smtplib`, `binascii`, and `bitcoinlib`.
 
-2. Rename the env.example file to env.py. It contains a list of variables used by the script. Change the variables related to the email to suit your needs as they will be used to send you an email. The variable `MAX_SECONDS` sets the maximum number of seconds the script should run. You should usually set it to some value and then keep calling the script (e.g., using Unix crontab jobs) using the same frequency.
+2. Rename the `env.example` file to `env.py`. It contains a list of variables used by the script. Change the variables related to the email-system to suit your needs as they will be used to send you an email. The variable `MAX_SECONDS` sets the maximum number of seconds the script should run. You should usually set it to some value and then keep calling the script (e.g., using Unix crontab jobs) using the same frequency.
 
-3. In your run jobs (or if run manually), call the script with `python3 bitcoin_finder.py` or set up a job to hit it every few seconds. It currently examines 10000 random private keys and looks for matches which takes much less then a minute in Intel Core i9 9th gen processor.
+3. In your scheduled run job (or if run manually), call the script with: `python3 bitcoin_finder.py`.
 
 4. Have Fun ! If you were lucky and got some BTCs, remember to donate a little to my BTC address: `1MKHALEDqXhBzqa86hj8FbDGW5HvDdA5Tq`.
+
+## DONATIONS
+
+BTC: 1MKHALEDqXhBzqa86hj8FbDGW5HvDdA5Tq
+
+ETH: 0x14551935EDf4aF06909336084412dd805aE14b26

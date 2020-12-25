@@ -15,7 +15,7 @@ If the program finds a matching paid it will send an email.
 
 3. In your scheduled run job (or if run manually), call the script with: `python3 bitcoin_finder.py`.
 
-4. Have Fun ! If you were lucky and got some BTCs, remember to donate a little to my BTC address: `1MKHALEDqXhBzqa86hj8FbDGW5HvDdA5Tq`.
+4. Have Fun ! If you were lucky and got some BTCs, remember to donate a little to any of my addresses below.
 
 ## DONATIONS
 

@@ -1,3 +1,3 @@
 #!/bin/sh
 
-python3 bitcoin_finder.py
+python3 hunt.py

@@ -8,7 +8,7 @@ This script will generate bitcoin private keys, extract their bitcoin addresses 
 
 2. Rename the `env.example` file to `env.py`. It contains a list of variables used by the script. Change the variables related to the email-system to suit your needs as they will be used to send you an email. The variable `MAX_SECONDS` sets the maximum number of seconds the script should run. You should usually set it to some value and then keep calling the script (e.g., using Unix crontab jobs) using the same frequency.
 
-3. In your scheduled run job (or if run manually), call the script with: `python3 bitcoin_finder.py`.
+3. In your scheduled run job (or if run manually), call the script with: `python3 hunt.py`.
 
 4. Have Fun ! If you were lucky and got some BTCs, remember to donate a little to any of my addresses below.
 

@@ -61,7 +61,7 @@ def hunter(num_seconds, worker_idx, return_dict):
                     balance = "UNKNOWN"
 
                 lucky_text  = "--------------------------------------\n"
-                lucky_text += "FOUND LUCKY PAIR:\n" 
+                lucky_text += "FOUND A LUCKY PAIR:\n" 
                 lucky_text += "PRIVATE KEY = " + private_key + "\n"
                 lucky_text += "ADDRESS = " + address + "\n"
                 lucky_text += "BALANCE = " + balance + "\n"
@@ -82,16 +82,22 @@ if __name__ == '__main__':
     manager = multiprocessing.Manager()
     return_dict = manager.dict()
     processes = []
-    for i in range(env.NUM_THREADS):
+    
+    if env.NUM_INSTANCES == 0:
+        inst_count = multiprocessing.cpu_count()
+    else:
+        inst_count = env.NUM_INSTANCES
+
+    for i in range(inst_count):
         p= multiprocessing.Process(target=hunter, args=(env.MAX_SECONDS, i, return_dict))
         processes.append(p)
         p.start()
 
     total = 0
-    for i in range(env.NUM_THREADS):
+    for i in range(inst_count):
         processes[i].join()
         proc_ret = return_dict[i]
         total += proc_ret
 
     rate = total/env.MAX_SECONDS
-    print("Total keys in (" + env.MAX_SECONDS + ") seconds: " + str(total) + " keys. Search rate: " + str(rate) + " key/s.")
+    print("Total keys in (" + str(env.MAX_SECONDS) + ") seconds: " + str(total) + " keys. Search rate: " + str(rate) + " key/s.")

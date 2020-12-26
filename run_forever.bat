@@ -1,5 +1,7 @@
 @echo off
-echo "Starting the hunter forever ... "
+
+cls
+echo Starting the hunter forever ...  
 
 :loop
 python hunt.py

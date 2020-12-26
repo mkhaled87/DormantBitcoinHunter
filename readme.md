@@ -4,13 +4,13 @@ This script will generate bitcoin private keys, extract their bitcoin addresses 
 
 ## SETUP
 
-1. Make sure you have `Python 3.x` installed. Install the following packages: `ecdsa`, `smtplib`, `binascii`, and `bitcoinlib`.
+1. Make sure you have `Python 3.x` installed. Install the following packages: `ecdsa`, and `bitcoinlib`.
 
-2. Rename the `env.example` file to `env.py`. It contains a list of variables used by the script. Change the variables related to the email-system to suit your needs as they will be used to send you an email. The variable `MAX_SECONDS` sets the maximum number of seconds the script should run. You should usually set it to some value and then keep calling the script (e.g., using Unix crontab jobs) using the same frequency.
+2. Rename the `env.example` file to `env.py`. It contains a list of variables used by the script. Change the variables related to the email-system to suit your needs as they will be used to send you an email. The variable `MAX_SECONDS` sets the maximum number of seconds the script should run. You should usually set it to some value and then keep calling the script (e.g., using Unix crontab jobs) using the same frequency. The script will use automatically all available CPU cores. To set set an explicit number of processes, change the variable `NUM_INSTANCES`. You can turn-off email sending by setting `SEND_EMAILS` to `False`.
 
 3. In your scheduled run job (or if run manually), call the script with: `python3 hunt.py`. If you are running Linux or MacOS, you may use the script `start.sh`.
 
-4. Running many instances of the script, in parallel, in as many machines as you can, should hopefully increase the probability of catching a match. Do not worry about seeding the RNG. The used `os.urandom()` will [take care of this](https://realpython.com/python-random/#osurandom-about-as-random-as-it-gets).
+4. Running many instances of the script in as many machines as you can, should hopefully increase the probability of catching a match. Do not worry about seeding the RNG. The used `os.urandom()` will [take care of this](https://realpython.com/python-random/#osurandom-about-as-random-as-it-gets).
 
 5. Have Fun ! If you were lucky and got some BTCs, remember to donate a little to any of my addresses below.
 

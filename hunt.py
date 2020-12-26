@@ -45,12 +45,9 @@ def hunter(num_seconds, worker_idx, return_dict):
         key = HDKey(private_key)
         address = key.address()
     
-        # override for testing
-        #if i == 0:
+        # override address for testing
+        #if worker_idx == 0 and i == 0:
         #    address = '1BamMXZBPLMwBT3UdyAAKy3ctGDbXNKoXk'
-        #if i == 0:
-        #    print("Started with private key: " + private_key)
-        #    print("Its address: " + address)
 
         i = i + 1
         for item in local_addresses:        # Second Example
@@ -67,10 +64,11 @@ def hunter(num_seconds, worker_idx, return_dict):
                 lucky_text += "BALANCE = " + balance + "\n"
                 lucky_text += "--------------------------------------\n"
 
-                try:
-                    send(lucky_text)
-                except Exception as e:
-                    print("Sending email failed.")
+                if env.SEND_EMAILS:
+                    try:
+                        send(lucky_text)
+                    except Exception as e:
+                        print("Sending email failed.")
 
                 fl = open(env.OUT_FILE, "a")
                 fl.write(lucky_text)

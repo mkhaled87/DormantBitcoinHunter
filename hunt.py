@@ -18,7 +18,7 @@ import addresses
 import env
 
 # send email
-def send(lucky_text):
+def send_email(lucky_text):
         text = env.email_text + "\n" + lucky_text
         msg = EmailMessage()
         msg.set_content(text)
@@ -31,50 +31,56 @@ def send(lucky_text):
         s.quit()
         print('Lucky Email sent!')
 
-# generate a private key
-def priv_key():
-    return binascii.hexlify(os.urandom(32)).decode('utf-8')
-
 
 # do your job !
 def hunter(num_seconds, worker_idx, return_dict):
-    local_addresses = addresses.addresses.copy()
+
+    # construct a set (inkl. hashtable) from the list of addresses for fast search
+    addresses_set = set(addresses.addresses)
+
     i = 0
     start = time.time()
     while ((time.time() - start)) < num_seconds:
-        private_key = priv_key()
+        
+        # generate a random BTC private key
+        private_key = binascii.hexlify(os.urandom(32)).decode('utf-8')
         key = HDKey(private_key)
+
+        # get the BTC address
         address = key.address()
     
-        # override address for testing
+        # override address for testing email-sending 
         #if worker_idx == 0 and i == 0:
         #    address = '1BamMXZBPLMwBT3UdyAAKy3ctGDbXNKoXk'
 
-        i = i + 1
-        for item in local_addresses:        # Second Example
-            if address == item:
+        # check if the address in the list
+        if address in addresses_set:
+            try:
+                balance = str((Service().getbalance(address))/1e8) + " BTC"
+            except Exception as e:
+                balance = "UNKNOWN"
+
+            lucky_text  = "--------------------------------------\n"
+            lucky_text += "FOUND A LUCKY PAIR:\n" 
+            lucky_text += "PRIVATE KEY = " + private_key + "\n"
+            lucky_text += "ADDRESS = " + address + "\n"
+            lucky_text += "BALANCE = " + balance + "\n"
+            lucky_text += "--------------------------------------\n"
+
+            if env.SEND_EMAILS:
                 try:
-                    balance = str((Service().getbalance(address))/1e8) + " BTC"
+                    send_email(lucky_text)
                 except Exception as e:
-                    balance = "UNKNOWN"
+                    print("Sending email failed.")
 
-                lucky_text  = "--------------------------------------\n"
-                lucky_text += "FOUND A LUCKY PAIR:\n" 
-                lucky_text += "PRIVATE KEY = " + private_key + "\n"
-                lucky_text += "ADDRESS = " + address + "\n"
-                lucky_text += "BALANCE = " + balance + "\n"
-                lucky_text += "--------------------------------------\n"
+            fl = open(env.OUT_FILE, "a")
+            fl.write(lucky_text)
+            fl.close()
 
-                if env.SEND_EMAILS:
-                    try:
-                        send(lucky_text)
-                    except Exception as e:
-                        print("Sending email failed.")
-
-                fl = open(env.OUT_FILE, "a")
-                fl.write(lucky_text)
-                fl.close()
+        # increment
+        i = i + 1
     
+    # record the number of generated private keys
     return_dict[worker_idx] = i
 
 if __name__ == '__main__':
@@ -99,4 +105,4 @@ if __name__ == '__main__':
         total += proc_ret
 
     rate = total/env.MAX_SECONDS
-    print("Total keys in (" + str(env.MAX_SECONDS) + ") seconds: " + str(total) + " keys. Search rate: " + str(math.floor(rate)) + " key/s.")
+    print("Tried " + str(total) + " keys in " + str(env.MAX_SECONDS) + " seconds (" + str(math.floor(rate)) + " key/s).")

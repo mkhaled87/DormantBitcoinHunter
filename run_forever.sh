@@ -1,4 +1,4 @@
 #!/bin/sh
 
 clear
-while true; do sh start.sh; done
+while true; do printf %s "$(date): "; python3 hunt.py; done

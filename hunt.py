@@ -7,6 +7,7 @@ import ecdsa
 import sys
 import smtplib
 import binascii
+import multiprocessing
 from email.message import EmailMessage
 from bitcoinlib.keys import HDKey
 from bitcoinlib.services.services import Service
@@ -33,8 +34,10 @@ def send(lucky_text):
 def priv_key():
     return binascii.hexlify(os.urandom(32)).decode('utf-8')
 
+
 # do your job !
-def main(num_seconds):
+def hunter(num_seconds, worker_idx, return_dict):
+    local_addresses = addresses.addresses.copy()
     i = 0
     start = time.time()
     while ((time.time() - start)) < num_seconds:
@@ -50,7 +53,7 @@ def main(num_seconds):
         #    print("Its address: " + address)
 
         i = i + 1
-        for item in addresses.addresses:        # Second Example
+        for item in local_addresses:        # Second Example
             if address == item:
                 try:
                     balance = str((Service().getbalance(address))/1e8) + " BTC"
@@ -72,8 +75,23 @@ def main(num_seconds):
                 fl = open(env.OUT_FILE, "a")
                 fl.write(lucky_text)
                 fl.close()
-
-    print("Finished " + str(i) + " random private keys in " + str((time.time() - start)) + " seconds.")
+    
+    return_dict[worker_idx] = i
 
 if __name__ == '__main__':
-    main(env.MAX_SECONDS)
+    manager = multiprocessing.Manager()
+    return_dict = manager.dict()
+    processes = []
+    for i in range(env.NUM_THREADS):
+        p= multiprocessing.Process(target=hunter, args=(env.MAX_SECONDS, i, return_dict))
+        processes.append(p)
+        p.start()
+
+    total = 0
+    for i in range(env.NUM_THREADS):
+        processes[i].join()
+        proc_ret = return_dict[i]
+        total += proc_ret
+
+    rate = total/env.MAX_SECONDS
+    print("Total keys in (" + env.MAX_SECONDS + ") seconds: " + str(total) + " keys. Search rate: " + str(rate) + " key/s.")

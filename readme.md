@@ -10,7 +10,7 @@ This script will generate bitcoin private keys, extract their bitcoin addresses 
 
 3. In your scheduled run job (or if run manually), call the script with: `python3 hunt.py`. If you are running Linux or MacOS, you may use the script `start.sh`.
 
-4. Running many instances of the script, in parallel, in as many machines as you can, will increase the probability of catching a match. No worry about seeding the RNG. The used `os.urandom()` will [take care of it](https://realpython.com/python-random/#osurandom-about-as-random-as-it-gets).
+4. Running many instances of the script, in parallel, in as many machines as you can, should hopefully increase the probability of catching a match. Do not worry about seeding the RNG. The used `os.urandom()` will [take care of this](https://realpython.com/python-random/#osurandom-about-as-random-as-it-gets).
 
 5. Have Fun ! If you were lucky and got some BTCs, remember to donate a little to any of my addresses below.
 

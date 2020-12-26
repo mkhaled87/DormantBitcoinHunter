@@ -2,6 +2,7 @@
 
 # needed python libs
 import os
+import math
 import time
 import ecdsa
 import sys
@@ -98,4 +99,4 @@ if __name__ == '__main__':
         total += proc_ret
 
     rate = total/env.MAX_SECONDS
-    print("Total keys in (" + str(env.MAX_SECONDS) + ") seconds: " + str(total) + " keys. Search rate: " + str(rate) + " key/s.")
+    print("Total keys in (" + str(env.MAX_SECONDS) + ") seconds: " + str(total) + " keys. Search rate: " + str(math.floor(rate)) + " key/s.")

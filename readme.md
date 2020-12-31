@@ -22,6 +22,6 @@ BTC: 1MKHALEDqXhBzqa86hj8FbDGW5HvDdA5Tq
 
 ETH: 0x14551935EDf4aF06909336084412dd805aE14b26
 
-## DISCLAIMEr
+## DISCLAIMER
 
 The developer shall not be, by any means, held responsible for any damage this software can cause to users of others.

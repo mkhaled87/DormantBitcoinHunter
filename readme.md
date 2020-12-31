@@ -1,8 +1,8 @@
 # Dormant Bitcoin Hunter
 
-> **_NOTE:_**  This project is developed for fun. there is an alomst-zero prrobability you can find the private key of a given BTC address.
-
 This script will generate bitcoin private keys, extract their bitcoin addresses and compare them with a list of addresses which have large amount of bitcoins (i.e., the [Dormant List](https://bitinfocharts.com/top-100-dormant_8y-bitcoin-addresses.html)). It is hunting for treasure. If it finds a match, it will send an email. This project is based on the repos [Henshall/BitcoinPrivateKeyHunter](https://github.com/Henshall/BitcoinPrivateKeyHunter) and [dodiitt/bitcoin_finder_python](https://github.com/dodiitt/bitcoin_finder_python). Several modifications are made to make it better and correct !
+
+> **_NOTE:_**  This project is developed for fun. there is an alomst-zero prrobability you can find the private key of a given BTC address.
 
 ## SETUP
 

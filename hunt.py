@@ -9,6 +9,7 @@ import sys
 import smtplib
 import binascii
 import multiprocessing
+import ssl
 from email.message import EmailMessage
 from bitcoinlib.keys import HDKey
 from bitcoinlib.services.services import Service
@@ -25,7 +26,9 @@ def send_email(lucky_text):
         msg['Subject'] = env.subject
         msg['From'] = env.SEND_FROM
         msg['To'] = env.SEND_TO
+        context=ssl.create_default_context()
         s = smtplib.SMTP(env.SMTP_HOST, env.SMTP_PORT)
+        s.starttls(context=context)
         s.login(env.USER, env.PASS)
         s.send_message(msg)
         s.quit()

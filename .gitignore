@@ -1,3 +1,10 @@
 .DS_Store
 env.py
 __pycache__/
+*.pyc
+.venv/
+venv/
+keys-found.txt
+*.egg-info/
+build/
+dist/

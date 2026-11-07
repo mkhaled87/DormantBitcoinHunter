@@ -16,7 +16,13 @@ from bitcoinlib.services.services import Service
 
 # import our configs
 import addresses
-import env
+try:
+    import env
+except ImportError:
+    print("Error: 'env.py' configuration file not found.")
+    print("Please copy 'env.example' to 'env.py' and adjust your settings:")
+    print("  cp env.example env.py")
+    sys.exit(1)
 
 # send email
 def send_email(lucky_text):
@@ -49,8 +55,8 @@ def hunter(num_seconds, worker_idx, return_dict):
         private_key = binascii.hexlify(os.urandom(32)).decode('utf-8')
         key = HDKey(private_key)
 
-        # get the BTC address
-        address = key.address()
+        # get the BTC address (base58 encoding for legacy P2PKH matching dormant list)
+        address = key.address(encoding='base58')
     
         # override address for testing email-sending 
         #if worker_idx == 0 and i == 0:

@@ -20,6 +20,7 @@ An educational, multi-process Bitcoin private key generator and dormant address 
 
 ## ✨ Features
 
+- **High-Performance C Engine:** Powered by Bitcoin Core's native `libsecp256k1` (via `coincurve`), chunked CSPRNG entropy buffering, and pre-compiled 20-byte binary `hash160` lookups, delivering **850,000+ keys/sec** and **1,700,000+ addr/sec** across multi-core systems.
 - **Rich Terminal Dashboard (TUI):** Real-time, sticky ANSI terminal interface featuring visual CPU utilization bars, per-core load sparklines, RAM usage, live keys/sec and addr/sec throughput, cycle progress bar, and a live rolling activity ticker.
 - **Dual Address Derivation:** Derives both **compressed and uncompressed** public key addresses per generated private key, doubling search coverage against early Bitcoin wallets (2009–2012 era) with virtually zero performance penalty.
 - **Multi-Process Concurrency:** Automatically detects and saturates all available CPU cores with minimal inter-process lock contention.
@@ -41,22 +42,22 @@ When running `hunt.py`, the terminal provides a live, non-scrolling dashboard:
 ║                     🪙  DORMANT BITCOIN HUNTER                     ║
 ╚════════════════════════════════════════════════════════════════════╝
 
-  Status:  ● HUNTING               Workers: 16 processes
+  Status:  ● HUNTING               Workers: 16 processes (libsecp256k1)
   Targets: 42,425 addresses loaded Matches: 0
   Cycle Progress: [███████████░░░░░░░░░░░░] 00:30 / 01:00 (50%)
   Controls: Press [q] or [Ctrl+C] to stop gracefully
 
   ┌─ SYSTEM UTILIZATION ──────────────────────────────────────────────┐
-  │  CPU Usage:  [███████████████████████░]  94.8%                    │
+  │  CPU Usage:  [███████████████████████░]  97.2%                    │
   │  Per-Core:   [████████████████] (16 Cores)                        │
-  │  RAM Usage:  [███████████░░░░░░░░░░░░░]  44.4% (56.0G / 128.0G)   │
+  │  RAM Usage:  [███████████░░░░░░░░░░░░░]  44.8% (56.4G / 128.0G)   │
   └───────────────────────────────────────────────────────────────────┘
 
   ┌─ SEARCH THROUGHPUT ───────────────────────────────────────────────┐
-  │  Keys Rate:         18,450 keys/sec                               │
-  │  Address Rate:      36,900 addr/sec (compressed + uncompressed)   │
-  │  Total Keys:        553,500                                       │
-  │  Total Addrs:     1,107,000                                       │
+  │  Keys Rate:        867,360 keys/sec                               │
+  │  Address Rate:   1,734,720 addr/sec (compressed + uncompressed)   │
+  │  Total Keys:    26,020,800                                        │
+  │  Total Addrs:   52,041,600                                        │
   └───────────────────────────────────────────────────────────────────┘
 
   ┌─ LIVE ACTIVITY SAMPLE ────────────────────────────────────────────┐

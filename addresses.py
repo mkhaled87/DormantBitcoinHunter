@@ -42424,11 +42424,21 @@ addresses = [
 "1GoEGp5LxydquYXp7zuBpVWnp8gzsNgQQS",
 "1GDWUJyvtsyFKNjBvH6hpLE3CdaXx33dxP",
 "1GDu4EUz2KgeYT4CukDS3qNkiCzg1UfqRA"
-
-
-
-
-
-
-
 ]
+
+# Pre-compiled lookup structures for high-performance matching
+_b58_digits = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz'
+_b58_map = {c: i for i, c in enumerate(_b58_digits)}
+
+def _decode_b58(s):
+    num = 0
+    for c in s:
+        num = num * 58 + _b58_map[c]
+    b = num.to_bytes(25, 'big')
+    return b[1:21]
+
+# HASH160 (20-byte) mapping and sets for zero-overhead inner-loop lookups
+HASH160_TO_ADDRESS = {_decode_b58(a): a for a in addresses}
+TARGET_HASHES = frozenset(HASH160_TO_ADDRESS.keys())
+ADDRESSES_SET = frozenset(addresses)
+

@@ -11,6 +11,7 @@ import ctypes
 import ssl
 import re
 import signal
+import hashlib
 from email.message import EmailMessage
 from bitcoinlib.keys import HDKey
 from bitcoinlib.services.services import Service
@@ -19,6 +20,12 @@ try:
     import psutil
 except ImportError:
     psutil = None
+
+try:
+    import coincurve
+    HAVE_COINCURVE = True
+except ImportError:
+    HAVE_COINCURVE = False
 
 try:
     import termios
@@ -56,6 +63,7 @@ MAGENTA = "\033[95m"
 WHITE = "\033[97m"
 
 ANSI_REGEX = re.compile(r'\x1b\[[0-9;]*[a-zA-Z]')
+_B58_DIGITS = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz'
 
 
 def visual_len(s):
@@ -96,6 +104,28 @@ def format_seconds(seconds):
     return f"{m:02d}:{s:02d}"
 
 
+def base58_check(payload):
+    """Encodes bytes payload with 4-byte double SHA-256 checksum in Base58."""
+    checksum = hashlib.sha256(hashlib.sha256(payload).digest()).digest()[:4]
+    num = int.from_bytes(payload + checksum, 'big')
+    res = []
+    while num > 0:
+        num, rem = divmod(num, 58)
+        res.append(_B58_DIGITS[rem])
+    for b in payload:
+        if b == 0:
+            res.append('1')
+        else:
+            break
+    return ''.join(reversed(res))
+
+
+def pub_to_b58(pub_bytes):
+    """Converts raw secp256k1 public key bytes to Base58 legacy P2PKH address."""
+    h160 = hashlib.new('ripemd160', hashlib.sha256(pub_bytes).digest()).digest()
+    return base58_check(b'\x00' + h160)
+
+
 def get_keypress():
     """Non-blocking keyboard check for quit keys ('q', 'x', etc.)"""
     if HAVE_MSVCRT:
@@ -132,65 +162,112 @@ def send_email(lucky_text):
     print('Lucky Email sent!')
 
 
+def record_match(private_key_hex, address, key_type, match_count):
+    """Triggered when an address collision is found."""
+    with match_count.get_lock():
+        match_count.value += 1
+
+    try:
+        balance = str((Service().getbalance(address)) / 1e8) + " BTC"
+    except Exception:
+        balance = "UNKNOWN"
+
+    lucky_text = "--------------------------------------\n"
+    lucky_text += f"FOUND A LUCKY PAIR ({key_type}):\n"
+    lucky_text += f"PRIVATE KEY = {private_key_hex}\n"
+    lucky_text += f"ADDRESS = {address}\n"
+    lucky_text += f"BALANCE = {balance}\n"
+    lucky_text += "--------------------------------------\n"
+
+    if getattr(env, "SEND_EMAILS", False):
+        try:
+            send_email(lucky_text)
+        except Exception as e:
+            print("Sending email failed:", e)
+
+    out_file = getattr(env, "OUT_FILE", "./keys-found.txt")
+    try:
+        with open(out_file, "a") as fl:
+            fl.write(lucky_text)
+    except Exception:
+        pass
+
+
 # worker process
 def hunter(worker_idx, num_seconds, shared_counts, stop_event, sample_buf, match_count):
     # Ignore SIGINT in worker child processes so only the parent handles Ctrl+C cleanly
     signal.signal(signal.SIGINT, signal.SIG_IGN)
 
     try:
-        addresses_set = set(addresses.addresses)
+        target_hashes = getattr(addresses, 'TARGET_HASHES', None)
+        hash_to_address = getattr(addresses, 'HASH160_TO_ADDRESS', None)
+        addresses_set = getattr(addresses, 'ADDRESSES_SET', None) or set(addresses.addresses)
+
         i = 0
         start = time.time()
+        sha256 = hashlib.sha256
+        urandom = os.urandom
 
-        while not stop_event.is_set():
-            # generate a random BTC private key
-            private_key = binascii.hexlify(os.urandom(32)).decode('utf-8')
-            key = HDKey(private_key)
+        if HAVE_COINCURVE and target_hashes is not None:
+            # --- ULTRA-FAST LIBSECP256K1 PATH WITH ENTROPY BATCHING ---
+            from_secret = coincurve.PublicKey.from_valid_secret
+            new_ripemd160 = lambda d: hashlib.new('ripemd160', d).digest()
+            BATCH_KEYS = 256
+            BATCH_BYTES = 32 * BATCH_KEYS
 
-            # derive both compressed and uncompressed legacy P2PKH addresses
-            addr_compressed = key.address(encoding='base58')
-            addr_uncompressed = key.address_uncompressed(encoding='base58')
+            while not stop_event.is_set():
+                # Batch entropy to eliminate kernel syscall context-switch overhead
+                rand_buf = urandom(BATCH_BYTES)
 
-            # check both address representations against the dormant set
-            for address, key_type in ((addr_compressed, "COMPRESSED"), (addr_uncompressed, "UNCOMPRESSED")):
-                if address in addresses_set:
-                    with match_count.get_lock():
-                        match_count.value += 1
-
+                for k in range(BATCH_KEYS):
+                    pk_bytes = rand_buf[k * 32:(k + 1) * 32]
                     try:
-                        balance = str((Service().getbalance(address)) / 1e8) + " BTC"
+                        pub = from_secret(pk_bytes)
                     except Exception:
-                        balance = "UNKNOWN"
+                        continue
 
-                    lucky_text = "--------------------------------------\n"
-                    lucky_text += f"FOUND A LUCKY PAIR ({key_type}):\n"
-                    lucky_text += f"PRIVATE KEY = {private_key}\n"
-                    lucky_text += f"ADDRESS = {address}\n"
-                    lucky_text += f"BALANCE = {balance}\n"
-                    lucky_text += "--------------------------------------\n"
+                    c_bytes = pub.format(compressed=True)
+                    u_bytes = pub.format(compressed=False)
 
-                    if getattr(env, "SEND_EMAILS", False):
-                        try:
-                            send_email(lucky_text)
-                        except Exception as e:
-                            print("Sending email failed:", e)
+                    h_c = new_ripemd160(sha256(c_bytes).digest())
+                    h_u = new_ripemd160(sha256(u_bytes).digest())
 
-                    out_file = getattr(env, "OUT_FILE", "./keys-found.txt")
-                    try:
-                        with open(out_file, "a") as fl:
-                            fl.write(lucky_text)
-                    except Exception:
-                        pass
+                    if h_c in target_hashes:
+                        matched_addr = hash_to_address.get(h_c, pub_to_b58(c_bytes))
+                        record_match(pk_bytes.hex(), matched_addr, "COMPRESSED", match_count)
+                    elif h_u in target_hashes:
+                        matched_addr = hash_to_address.get(h_u, pub_to_b58(u_bytes))
+                        record_match(pk_bytes.hex(), matched_addr, "UNCOMPRESSED", match_count)
 
-            i += 1
-            # periodically report progress to minimize IPC lock contention
-            if i % 250 == 0:
-                shared_counts[worker_idx] = i
-                if worker_idx == 0:
-                    sample_data = f"{private_key}|{addr_compressed}|{addr_uncompressed}".encode('utf-8')[:255]
-                    sample_buf.value = sample_data
-                if num_seconds > 0 and (time.time() - start) >= num_seconds:
-                    break
+                i += BATCH_KEYS
+                if i % 4096 < BATCH_KEYS:
+                    shared_counts[worker_idx] = i
+                    if worker_idx == 0:
+                        sample_data = f"{pk_bytes.hex()}|{pub_to_b58(c_bytes)}|{pub_to_b58(u_bytes)}".encode('utf-8')[:255]
+                        sample_buf.value = sample_data
+                    if num_seconds > 0 and (time.time() - start) >= num_seconds:
+                        break
+        else:
+            # --- COMPATIBILITY FALLBACK PATH (bitcoinlib HDKey) ---
+            while not stop_event.is_set():
+                private_key = binascii.hexlify(urandom(32)).decode('utf-8')
+                key = HDKey(private_key)
+                addr_compressed = key.address(encoding='base58')
+                addr_uncompressed = key.address_uncompressed(encoding='base58')
+
+                if addr_compressed in addresses_set:
+                    record_match(private_key, addr_compressed, "COMPRESSED", match_count)
+                elif addr_uncompressed in addresses_set:
+                    record_match(private_key, addr_uncompressed, "UNCOMPRESSED", match_count)
+
+                i += 1
+                if i % 250 == 0:
+                    shared_counts[worker_idx] = i
+                    if worker_idx == 0:
+                        sample_data = f"{private_key}|{addr_compressed}|{addr_uncompressed}".encode('utf-8')[:255]
+                        sample_buf.value = sample_data
+                    if num_seconds > 0 and (time.time() - start) >= num_seconds:
+                        break
 
         shared_counts[worker_idx] = i
     except (KeyboardInterrupt, SystemExit):
@@ -249,13 +326,14 @@ def render_dashboard(elapsed, max_seconds, total_keys, key_rate, addr_rate, matc
 
     total_addrs = total_keys * 2
     num_targets = len(addresses.addresses)
+    engine_name = f"{CYAN}libsecp256k1 (fast){RESET}" if HAVE_COINCURVE else f"{YELLOW}bitcoinlib (fallback){RESET}"
 
     output = []
     output.append(f"{BOLD}{CYAN}╔════════════════════════════════════════════════════════════════════╗{RESET}")
     output.append(f"{BOLD}{CYAN}║                     🪙  DORMANT BITCOIN HUNTER                     ║{RESET}")
     output.append(f"{BOLD}{CYAN}╚════════════════════════════════════════════════════════════════════╝{RESET}")
     output.append("")
-    output.append(f"  {BOLD}Status:{RESET}  {status_str:<26} {BOLD}Workers:{RESET} {inst_count} processes")
+    output.append(f"  {BOLD}Status:{RESET}  {status_str:<26} {BOLD}Workers:{RESET} {inst_count} processes ({engine_name})")
     output.append(f"  {BOLD}Targets:{RESET} {num_targets:,} addresses loaded      {BOLD}Matches:{RESET} {BOLD}{GREEN if matches == 0 else RED}{matches}{RESET}")
     output.append(f"  {BOLD}Cycle Progress:{RESET} {time_disp}")
     if not is_final:

@@ -6,7 +6,7 @@
 
 An educational, multi-process Bitcoin private key generator and dormant address hunter written in Python.
 
-**Dormant Bitcoin Hunter** generates random 256-bit Bitcoin private keys, derives their corresponding public addresses (legacy P2PKH), and matches them in real time against a target dataset of ~42,400 high-value dormant Bitcoin addresses (derived from early Bitcoin blocks and the [BitInfoCharts Dormant List](https://bitinfocharts.com/top-100-dormant_8y-bitcoin-addresses.html)). If a match is found, it queries the live blockchain balance, writes the key pair to disk, and can optionally dispatch an instant email alert via SMTP.
+**Dormant Bitcoin Hunter** generates random 256-bit Bitcoin private keys, derives both their **compressed and uncompressed** public addresses (legacy P2PKH), and matches them in real time against a target dataset of ~42,400 high-value dormant Bitcoin addresses (derived from early Bitcoin blocks and the [BitInfoCharts Dormant List](https://bitinfocharts.com/top-100-dormant_8y-bitcoin-addresses.html)). If a match is found, it queries the live blockchain balance, writes the key pair to disk, and can optionally dispatch an instant email alert via SMTP.
 
 > This project is inspired by [Henshall/BitcoinPrivateKeyHunter](https://github.com/Henshall/BitcoinPrivateKeyHunter) and [dodiitt/bitcoin_finder_python](https://github.com/dodiitt/bitcoin_finder_python), with enhancements for correctness and multiprocessing throughput.
 
@@ -20,12 +20,51 @@ An educational, multi-process Bitcoin private key generator and dormant address 
 
 ## ✨ Features
 
-- **Multi-Process Concurrency:** Automatically detects and saturates all available CPU cores.
+- **Rich Terminal Dashboard (TUI):** Real-time, sticky ANSI terminal interface featuring visual CPU utilization bars, per-core load sparklines, RAM usage, live keys/sec and addr/sec throughput, cycle progress bar, and a live rolling activity ticker.
+- **Dual Address Derivation:** Derives both **compressed and uncompressed** public key addresses per generated private key, doubling search coverage against early Bitcoin wallets (2009–2012 era) with virtually zero performance penalty.
+- **Multi-Process Concurrency:** Automatically detects and saturates all available CPU cores with minimal inter-process lock contention.
+- **Graceful Shutdown & Controls:** Press **`q`** or **`Ctrl+C`** at any point to stop all parallel workers cleanly without tracebacks, restoring terminal state and displaying final metrics.
 - **Fast Lookups:** Utilizes $O(1)$ set lookups against 42,000+ dormant addresses.
 - **Cryptographically Secure RNG:** Uses Python's `os.urandom(32)` to generate unbiased 256-bit entropy.
 - **Balance Verification:** Live balance queries on hits via `bitcoinlib`.
 - **Instant Alerts:** Configurable SMTP email notifications with TLS.
 - **Continuous Execution:** Included shell and batch scripts for 24/7 background operation.
+
+---
+
+## 🖥️ Terminal Dashboard
+
+When running `hunt.py`, the terminal provides a live, non-scrolling dashboard:
+
+```text
+╔════════════════════════════════════════════════════════════════════╗
+║                     🪙  DORMANT BITCOIN HUNTER                     ║
+╚════════════════════════════════════════════════════════════════════╝
+
+  Status:  ● HUNTING               Workers: 16 processes
+  Targets: 42,425 addresses loaded Matches: 0
+  Cycle Progress: [███████████░░░░░░░░░░░░] 00:30 / 01:00 (50%)
+  Controls: Press [q] or [Ctrl+C] to stop gracefully
+
+  ┌─ SYSTEM UTILIZATION ──────────────────────────────────────────────┐
+  │  CPU Usage:  [███████████████████████░]  94.8%                    │
+  │  Per-Core:   [████████████████] (16 Cores)                        │
+  │  RAM Usage:  [███████████░░░░░░░░░░░░░]  44.4% (56.0G / 128.0G)   │
+  └───────────────────────────────────────────────────────────────────┘
+
+  ┌─ SEARCH THROUGHPUT ───────────────────────────────────────────────┐
+  │  Keys Rate:         18,450 keys/sec                               │
+  │  Address Rate:      36,900 addr/sec (compressed + uncompressed)   │
+  │  Total Keys:        553,500                                       │
+  │  Total Addrs:     1,107,000                                       │
+  └───────────────────────────────────────────────────────────────────┘
+
+  ┌─ LIVE ACTIVITY SAMPLE ────────────────────────────────────────────┐
+  │  Private Key:  ba67e0daa1...87e71700cc                            │
+  │  Address (C):  1BLcP3j9Ug5Tf5NfuX1iQt6N6dygvBLCMq                 │
+  │  Address (U):  1Kn8AeKFWQWYmqJ6xYyA3Q8bzQvnXwbVS5                 │
+  └───────────────────────────────────────────────────────────────────┘
+```
 
 ---
 
@@ -108,8 +147,10 @@ All settings are configured inside `env.py`:
 ```mermaid
 flowchart TD
     A["os.urandom(32)"] --> B["256-bit Private Key"]
-    B --> C["Base58 P2PKH Address"]
-    C --> D{"In Dormant Addresses List?"}
+    B --> C1["Compressed P2PKH Address"]
+    B --> C2["Uncompressed P2PKH Address"]
+    C1 --> D{"In Dormant Addresses List?"}
+    C2 --> D
     D -- No --> E["Increment Counter & Loop"]
     E --> A
     D -- Yes --> F["Query Live Balance (bitcoinlib)"]
